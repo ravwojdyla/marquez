@@ -178,6 +178,11 @@ class BaseExtractor(ABC, LoggingMixin):
 
     def __init__(self, operator):
         self.operator = operator
+        self.patch()
+
+    def patch(self):
+        # Extractor should register extension methods or patches to operator here
+        pass
 
     @classmethod
     def get_operator_class(cls):
@@ -189,13 +194,13 @@ class BaseExtractor(ABC, LoggingMixin):
                 self.operator.__class__ == self.operator_class)
 
     @abstractmethod
-    def extract(self) -> Union[StepMetadata, List[StepMetadata]]:
+    def extract(self) -> Union[Optional[StepMetadata], List[StepMetadata]]:
         # In future releases, we'll want to deprecate returning a list of StepMetadata
         # and simply return a StepMetadata object. We currently return a list
         # for backwards compatibility.
         pass
 
-    def extract_on_complete(self, task_instance) -> Union[StepMetadata, List[StepMetadata]]:
+    def extract_on_complete(self, task_instance) -> Union[Optional[StepMetadata], List[StepMetadata]]:
         # TODO: This method allows for the partial updating of task
         # metadata on completion. Marquez currently doesn't support
         # partial updates within the context of a DAG run, but this feature
