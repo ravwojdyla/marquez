@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Union
+from typing import List, Union, Optional
 from uuid import uuid4
 
 import airflow.models
@@ -19,9 +19,11 @@ from airflow.contrib.operators.bigquery_operator import BigQueryOperator
 from airflow.models import DagRun
 from airflow.operators.postgres_operator import PostgresOperator
 from airflow.utils.state import State
+from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
 
 from marquez_airflow.extractors import StepMetadata
 from marquez_airflow.extractors.bigquery_extractor import BigQueryExtractor
+from marquez_airflow.extractors.great_expectations_extractor import GreatExpectationsExtractor
 from marquez_airflow.extractors.postgres_extractor import PostgresExtractor
 from marquez_airflow.utils import (
     JobIdMapping,
@@ -48,8 +50,13 @@ _MARQUEZ = MarquezAdapter()
 # with more convenient methods (ex: 'Extractors.extractor_for_task()')
 _EXTRACTORS = {
     PostgresOperator: PostgresExtractor,
-    BigQueryOperator: BigQueryExtractor
+    BigQueryOperator: BigQueryExtractor,
+    GreatExpectationsOperator: GreatExpectationsExtractor
     # Append new extractors here
+}
+
+_REQUIRE_PATCH = {
+    GreatExpectationsOperator: GreatExpectationsExtractor
 }
 
 
@@ -57,6 +64,12 @@ class DAG(airflow.models.DAG, LoggingMixin):
     def __init__(self, *args, **kwargs):
         self.log.debug("marquez-airflow dag starting")
         super().__init__(*args, **kwargs)
+        self.extractors = {}
+
+    def add_task(self, task):
+        super().add_task(task)
+        extractor = _REQUIRE_PATCH.get(task.__class__)
+        self.extractors[task.task_id] = extractor(task)
 
     def create_dagrun(self, *args, **kwargs):
         # run Airflow's create_dagrun() first
@@ -231,7 +244,7 @@ class DAG(airflow.models.DAG, LoggingMixin):
             name=self._marquez_job_name(self.dag_id, task.task_id)
         )
 
-    def _extract(self, extractor, task, task_instance) -> Union[StepMetadata, List[StepMetadata]]:
+    def _extract(self, extractor, task, task_instance) -> Union[Optional[StepMetadata], List[StepMetadata]]:
         if task_instance:
             step = extractor(task).extract_on_complete(task_instance)
             if step:
