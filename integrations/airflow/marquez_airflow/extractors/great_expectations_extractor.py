@@ -21,7 +21,7 @@ from marquez_airflow.extractors import (
 )
 
 
-def cbd(f):
+def wrap_callback(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         result = f(self, *args, **kwargs)
@@ -30,7 +30,7 @@ def cbd(f):
     return wrapper
 
 
-GreatExpectationsOperator.execute = cbd(GreatExpectationsOperator.execute)
+GreatExpectationsOperator.execute = wrap_callback(GreatExpectationsOperator.execute)
 
 
 class GreatExpectationsExtractor(BaseExtractor):
@@ -46,11 +46,13 @@ class GreatExpectationsExtractor(BaseExtractor):
 
     def parse_result(self):
         with open('/home/mobuchowski/result.txt', 'a') as f:
-            f.write('dupa\n')
+            f.write('test\n')
 
     def extract(self) -> Optional[StepMetadata]:
         if self.result:
             self.parse_result()
+            return StepMetadata(name='name')
+        return None
 
     def extract_on_complete(self, task_instance) -> Optional[StepMetadata]:
         if self.result:
