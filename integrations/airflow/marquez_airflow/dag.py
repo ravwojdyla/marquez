@@ -52,7 +52,7 @@ class DAG(airflow.models.DAG, LoggingMixin):
         self.log.debug("marquez-airflow dag starting")
         super().__init__(*args, **kwargs)
         self.extractors = {}
-        
+
         if extractor_mapper:
             self.extractor_mapper = extractor_mapper
         else:

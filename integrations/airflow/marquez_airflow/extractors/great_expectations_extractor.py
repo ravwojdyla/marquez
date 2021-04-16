@@ -57,3 +57,5 @@ class GreatExpectationsExtractor(BaseExtractor):
     def extract_on_complete(self, task_instance) -> Optional[StepMetadata]:
         if self.result:
             self.parse_result()
+            return StepMetadata(name='name')
+        return None
