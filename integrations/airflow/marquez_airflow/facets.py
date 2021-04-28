@@ -34,6 +34,7 @@ class AirflowRunArgsRunFacet(BaseFacet):
 class ColumnMetric:
     nullCount: Optional[int] = attr.ib(default=None)
     distinctCount: Optional[int] = attr.ib(default=None)
+    average: Optional[float] = attr.ib(default=None)
     min: Optional[float] = attr.ib(default=None)
     max: Optional[float] = attr.ib(default=None)
     quantiles: Optional[Dict[str, float]] = attr.ib(default=None)

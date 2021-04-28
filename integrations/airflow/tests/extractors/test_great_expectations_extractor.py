@@ -9,6 +9,7 @@ Run test:
     python3 -m unittest test.operators.test_operators.TestGreatExpectationsOperator
 
 """
+import json
 from pathlib import Path
 import logging
 import os
@@ -50,6 +51,9 @@ def test_great_expectations_operator_batch_kwargs_success():
 
     log.info(result)
 
+    with open('/home/mobuchowski/valres.json', 'w') as f:
+        f.write(json.dumps(result.to_json_dict(), indent=4, sort_keys=True))
+
     expected_dq = DataQualityDatasetFacet(
         rowCount=10000,
         columnMetrics={
@@ -58,6 +62,7 @@ def test_great_expectations_operator_batch_kwargs_success():
                 distinctCount=3
             ),
             'total_amount': ColumnMetric(
+                average=15.724231000000003,
                 min=-52.8,
                 max=3004.8,
                 quantiles={"0": -52.8, "0.333": 9.3, "0.6667": 14.16, "1": 3004.8}

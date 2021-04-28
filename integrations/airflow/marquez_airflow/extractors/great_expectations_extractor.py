@@ -38,12 +38,13 @@ def wrap_callback(f):
 log = logging.getLogger(__file__)
 
 
-# Great Expectations is optional dependency
+# Great Expectations is optional dependency.
 try:
     from great_expectations_provider.operators.great_expectations import GreatExpectationsOperator
     _has_great_expectations = True
     GreatExpectationsOperator.execute = wrap_callback(GreatExpectationsOperator.execute)
 except (ImportError, ModuleNotFoundError):
+    # Create placeholder for GreatExpectationsOperator
     GreatExpectationsOperator = None
     log.info('Did not find great_expectations_provider library')
     _has_great_expectations = False
@@ -51,6 +52,9 @@ except (ImportError, ModuleNotFoundError):
 
 @attr.s
 class ExpectationsParserResult:
+    """
+    Internal class to represent actual expectation values, per table and optionally per column
+    """
     facet_key: str = attr.ib()
     value: Any = attr.ib()
     column_id: Optional[str] = attr.ib(default=None)
@@ -113,7 +117,7 @@ class GreatExpectationsExtractorImpl(BaseExtractor):
             for expectation in expectations_results:
                 for parser in _EXPECTATIONS_PARSERS:
 
-                    # accept possible duplication for now
+                    # accept possible duplication, should have no difference in results
                     if parser.can_accept(expectation):
                         result = parser.parse_expectation_result(expectation)
                         facet_data[result.facet_key] = result.value
@@ -146,6 +150,10 @@ class GreatExpectationsExtractorImpl(BaseExtractor):
 
 
 class ExpectationsParser:
+    """
+    Base expectation parser. Dispatches parser looking at expectation type.
+    Implementations should extract result from result dictionary.
+    """
     expectation_key: str = ''
     facet_key: str = ''
 
@@ -159,7 +167,7 @@ class ExpectationsParser:
 
     @staticmethod
     def parse_expectation_result(expectation_result: dict) -> ExpectationsParserResult:
-        pass
+        raise NotImplementedError("")
 
 
 class BetweenRowCountExpectationsParser(ExpectationsParser):
@@ -190,6 +198,9 @@ class FileSizeExpectationsParser(ExpectationsParser):
 
 
 class ColumnExpectationsParser(ExpectationsParser):
+    """
+    Extractor for column-based expectations. Looks at column name in addition to expectation type
+    """
     column = ''
 
     @classmethod
@@ -229,6 +240,23 @@ class ValuesDistinctExpectationParser(ColumnExpectationsParser):
         return ExpectationsParserResult(
             'distinctCount',
             get_from_nullable_chain(expectation_result, ['result', 'observed_value']),
+            get_from_nullable_chain(
+                expectation_result,
+                ['expectation_config', 'kwargs', 'column']
+            )
+        )
+
+
+class ValuesAverageExpectationParser(ColumnExpectationsParser):
+    expectation_key = 'expect_column_sum_to_be_between'
+
+    @staticmethod
+    def parse_expectation_result(expectation_result: dict) -> ExpectationsParserResult:
+        sum = get_from_nullable_chain(expectation_result, ['result', 'observed_value'])
+        count = get_from_nullable_chain(expectation_result, ['result', 'element_count'])
+        return ExpectationsParserResult(
+            'average',
+            sum / count,
             get_from_nullable_chain(
                 expectation_result,
                 ['expectation_config', 'kwargs', 'column']
@@ -301,7 +329,8 @@ _COLUMN_EXPECTATIONS_PARSER = [
     ValuesDistinctExpectationParser,
     ValuesMinExpectationParser,
     ValuesMaxExpectationParser,
-    ValuesQuantileExpectationParser
+    ValuesQuantileExpectationParser,
+    ValuesAverageExpectationParser
 ]
 
 if _has_great_expectations:

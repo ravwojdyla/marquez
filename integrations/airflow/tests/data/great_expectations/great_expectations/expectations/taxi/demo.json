@@ -36,6 +36,15 @@
       "meta": {}
     },
     {
+      "expectation_type": "expect_column_sum_to_be_between",
+      "kwargs": {
+        "column": "total_amount",
+        "min_value": 100000,
+        "max_value": 200000
+      },
+      "meta": {}
+    },
+    {
       "expectation_type": "expect_column_quantile_values_to_be_between",
       "kwargs": {
         "column": "total_amount",

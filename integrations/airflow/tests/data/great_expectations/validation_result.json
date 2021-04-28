@@ -231,6 +231,34 @@
                             "raised_exception": false
                         },
                         "expectation_config": {
+                            "expectation_type": "expect_column_sum_to_be_between",
+                            "kwargs": {
+                                "column": "total_amount",
+                                "max_value": 200000,
+                                "min_value": 100000,
+                                "result_format": {
+                                    "partial_unexpected_count": 20,
+                                    "result_format": "SUMMARY"
+                                }
+                            },
+                            "meta": {}
+                        },
+                        "meta": {},
+                        "result": {
+                            "element_count": 10000,
+                            "missing_count": null,
+                            "missing_percent": null,
+                            "observed_value": 157242.31000000003
+                        },
+                        "success": true
+                    },
+                    {
+                        "exception_info": {
+                            "exception_message": null,
+                            "exception_traceback": null,
+                            "raised_exception": false
+                        },
+                        "expectation_config": {
                             "expectation_type": "expect_column_quantile_values_to_be_between",
                             "kwargs": {
                                 "column": "total_amount",
@@ -368,9 +396,9 @@
                     }
                 ],
                 "statistics": {
-                    "evaluated_expectations": 8,
+                    "evaluated_expectations": 9,
                     "success_percent": 100.0,
-                    "successful_expectations": 8,
+                    "successful_expectations": 9,
                     "unsuccessful_expectations": 0
                 },
                 "success": true
