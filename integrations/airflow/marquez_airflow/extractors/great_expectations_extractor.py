@@ -135,7 +135,9 @@ class GreatExpectationsExtractorImpl(BaseExtractor):
                 facet_data['columnMetrics'][key] = ColumnMetric(**facet_data['columnMetrics'][key])
             return DataQualityDatasetFacet(**facet_data)
         except ValueError:
-            log.exception("Great Expectations's CheckpointResult object does not have expected key")
+            log.exception(
+                "Great Expectations's CheckpointResult object does not have expected key"
+            )
         return None
 
     def extract(self) -> Optional[StepMetadata]:

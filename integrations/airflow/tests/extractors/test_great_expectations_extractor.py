@@ -9,7 +9,6 @@ Run test:
     python3 -m unittest test.operators.test_operators.TestGreatExpectationsOperator
 
 """
-import json
 from pathlib import Path
 import logging
 import os
