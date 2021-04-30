@@ -51,9 +51,6 @@ def test_great_expectations_operator_batch_kwargs_success():
 
     log.info(result)
 
-    with open('/home/mobuchowski/valres.json', 'w') as f:
-        f.write(json.dumps(result.to_json_dict(), indent=4, sort_keys=True))
-
     expected_dq = DataQualityDatasetFacet(
         rowCount=10000,
         columnMetrics={

@@ -57,7 +57,7 @@ class DAG(airflow.models.DAG, LoggingMixin):
 
         # Purpose: some extractors, called patchers need to hook up to internal components of
         # operator to extract necessary data. The hooking up is done on instantiation
-        # of extractor TODO ADD
+        # of extractor via patch() method. That's why extractor is created here.
         patcher = self.extractor_mapper.get_patcher_class(task.__class__)
         if patcher:
             self.extractors[task.task_id] = patcher(task)
@@ -121,7 +121,7 @@ class DAG(airflow.models.DAG, LoggingMixin):
                     exc_info=True)
 
     def handle_callback(self, *args, **kwargs):
-        self.log.info(f"handle_callback({args}, {kwargs})")
+        self.log.debug(f"handle_callback({args}, {kwargs})")
         try:
             dagrun = args[0]
             self.log.debug(f"handle_callback() dagrun : {dagrun}")

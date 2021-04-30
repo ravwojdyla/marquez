@@ -61,6 +61,10 @@ class ExpectationsParserResult:
 
 
 class GreatExpectationsExtractorImpl(BaseExtractor):
+    """
+    Great Expectations extractor extracts validation data from CheckpointResult object and
+    parses it via ExpectationsParsers. Results are used to prepare data quality facet.
+    """
     operator_class = GreatExpectationsOperator
 
     def __init__(self, operator):
@@ -131,7 +135,7 @@ class GreatExpectationsExtractorImpl(BaseExtractor):
                 facet_data['columnMetrics'][key] = ColumnMetric(**facet_data['columnMetrics'][key])
             return DataQualityDatasetFacet(**facet_data)
         except ValueError:
-            pass
+            log.exception("Great Expectations's CheckpointResult object does not have expected key")
         return None
 
     def extract(self) -> Optional[StepMetadata]:
